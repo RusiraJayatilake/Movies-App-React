@@ -1,7 +1,8 @@
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC8IpxN8YehEi9lW8DdPX1wMRHWU8-uanw",
+  apiKey: process.env.APIKEY,
   authDomain: "movieappreact-9eaa9.firebaseapp.com",
   projectId: "movieappreact-9eaa9",
   storageBucket: "movieappreact-9eaa9.appspot.com",
@@ -10,6 +11,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const db = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-module.exports = db;
+export { db };
