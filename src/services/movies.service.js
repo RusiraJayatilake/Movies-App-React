@@ -15,10 +15,6 @@ export const saveMovie = async (movie) => {
   try{
     console.log("Saving movie:", movie); // Log movie object for debugging
     
-    if (!movie || !movie.title || !movie.genre || !movie.numberInStock || !movie.dailyRentalRate) {
-      throw new Error('Invalid movie data. All fields are required.');
-    }
-
     const docRef = await addDoc(collection(db, "movies"), {
       name: movie.title,
       genre: movie.genre,
