@@ -49,7 +49,7 @@ class Movies extends Component {
         const { pageSize, currentPage, selectedGenre, movies: allMovies } = this.state;
         if (this.state.movies.length === 0) return <p>No movies in the database</p>;
 
-        const filtered = selectedGenre && selectedGenre._id ? allMovies.filter(m => m.genre._id == selectedGenre._id) : allMovies;
+        const filtered = selectedGenre && selectedGenre._id ? allMovies.filter(m => m.genre._id === selectedGenre._id) : allMovies;
         const movies = Paginate(filtered, currentPage, pageSize);
         
         return (
