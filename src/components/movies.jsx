@@ -1,21 +1,23 @@
 import React, { Component } from 'react'
 import { getMovies, deleteMovie } from "../services/movies.service.js";
 import { getGenres } from '../services/genre.service.js';
-import Like from './common/like.jsx';
 import Pagination from './common/pagination.jsx';
 import { Paginate } from '../utils/paginate.js';
 import ListGroup from './common/listgroup.jsx';
+import MoviesTable from './moviesTable.jsx';
+import _ from 'lodash';
 
 class Movies extends Component {
     state = { 
         movies: [],
         genres: [],
         currentPage: 1,
-        pageSize: 3
+        pageSize: 3,
+        sortCol: {path: 'title', order: 'asc'}
     };
 
     componentDidMount() {
-        const genres = [{name: 'All Genres'}, ...getGenres()];
+        const genres = [{_id: '', name: 'All Genres'}, ...getGenres()];
         this.setState({
             movies: getMovies(), genres
         });
@@ -45,12 +47,24 @@ class Movies extends Component {
         this.setState({ selectedGenre: item, currentPage: 1 })
     };
 
+    handleSort = (path) => {
+        const sortColumn = {...this.state.sortCol};
+        if (sortColumn.path === path)
+            sortColumn.order = (sortColumn.order === 'asc') ? 'desc': 'asc;'    
+        else {
+            sortColumn.path = path;
+            sortColumn.order = 'asc';
+        } 
+        this.setState({ sortColumn: sortColumn }) // fix sorting issue
+    };
+
     render() { 
-        const { pageSize, currentPage, selectedGenre, movies: allMovies } = this.state;
+        const { pageSize, currentPage, selectedGenre, sortCol, movies: allMovies } = this.state;
         if (this.state.movies.length === 0) return <p>No movies in the database</p>;
 
         const filtered = selectedGenre && selectedGenre._id ? allMovies.filter(m => m.genre._id === selectedGenre._id) : allMovies;
-        const movies = Paginate(filtered, currentPage, pageSize);
+        const sorted = _.orderBy(filtered, [sortCol.path], [sortCol.order]); 
+        const movies = Paginate(sorted, currentPage, pageSize);
         
         return (
             <div className='row gap-4'>
@@ -72,36 +86,13 @@ class Movies extends Component {
                         <span>Favourite movies: <b>{this.state.movies.filter(m => m.liked).length}</b></span>
                     </div>
                     
-                    <table className="table mt-4">
-                        <thead>
-                            <tr>
-                                <th scope="col">Title</th>
-                                <th scope="col">Genre</th>
-                                <th scope="col">Stock</th>
-                                <th scope="col">Rate</th>
-                                <th scope="col">Favourites</th>
-                                <th />
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {movies.map(movie => (
-                                <tr key={movie._id}>
-                                    <td>{movie.title}</td>
-                                    <td>{movie.genre.name}</td>
-                                    <td>{movie.numberInStock}</td>
-                                    <td>{movie.dailyRentalRate}</td>
-                                    <td>
-                                        <Like 
-                                            liked={movie.liked}
-                                            onClick={() => this.handleLike(movie)} />
-                                    </td>
-                                    <td>
-                                        <button onClick={() => this.handleDelete(movie._id)} className="btn btn-danger" >Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <MoviesTable 
+                        movies={movies}
+                        onLike={this.handleLike}
+                        onDelete={this.handleDelete}
+                        onSort={this.handleSort}
+                    />
+                    
                     <Pagination 
                         itemsCount={filtered.length} 
                         pageSize={pageSize} 
